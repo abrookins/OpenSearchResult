@@ -1,0 +1,7 @@
+[
+    {
+        "keys": ["g", "o"],
+        "command": "goto_file_at_path",
+        "context": [{"key": "setting.command_mode"}]
+    }
+]
