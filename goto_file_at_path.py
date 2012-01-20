@@ -30,6 +30,7 @@ class HighlightFilePaths(sublime_plugin.EventListener):
 
     def on_selection_modified(self, view):
         if view.settings().get('is_widget') \
+            or not view.settings().get('highlight_file_paths') \
             or not view.settings().get('command_mode'):
             view.erase_regions(self.HIGHLIGHT_REGION_NAME)
             return
@@ -39,7 +40,8 @@ class HighlightFilePaths(sublime_plugin.EventListener):
         view.erase_regions(self.HIGHLIGHT_REGION_NAME)
 
     def on_activated(self, view):
-        self.show_highlight(view)
+        if view.settings().get('highlight_file_paths'):
+            self.show_highlight(view)
 
 
 class GotoFileAtPathCommand(sublime_plugin.TextCommand):
