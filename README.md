@@ -17,6 +17,7 @@ The default key binding is a Vintage command mode key: "go".
 
 You can change various things about the plugin by adding user settings:
 
+- 'highlight_file_paths': Set to false to disable highlighting openable paths (the command will still work)
 - 'highlight_file_scope': The scope that will be used to color the outline for
 openable paths. See your theme file for examples.
 - 'highlight_file_icon': If you want an icon to show up in the gutter next to
