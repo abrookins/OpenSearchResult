@@ -1,3 +1,4 @@
+import re
 import os
 import sublime, sublime_plugin
 
@@ -59,3 +60,51 @@ class GotoFileAtPathCommand(sublime_plugin.TextCommand):
             file_path = line.split(':')[0]
             if os.path.exists(file_path):
                 self.view.window().open_file(file_path)
+
+
+class OpenSearchResultCommand(sublime_plugin.TextCommand):
+    """
+    Open a file listed in the Find In File search results at the line the
+    cursor is on.
+    """
+
+    def open_file_from_line(self, line):
+        """
+        Attempt to parse a file path from the string `line` and open it in a
+        new buffer.
+        """
+        if ':' not in line:
+            return
+
+        file_path = line.split(':')[0]
+
+        if os.path.exists(file_path):
+            self.view.window().open_file(file_path)
+
+    def previous_line(self, region):
+        """ `region` should be a Region covering the entire hard line """
+        if region.begin() == 0:
+            return None
+        else:
+            return self.view.full_line(region.begin() - 1)
+
+    def run(self, edit):
+        cursor = self.view.sel()[0]
+        cur_line = self.view.line(cursor)
+        line_str = self.view.substr(cur_line).strip()
+
+        # Only a search result matching the find will include a colon.
+        # E.g., "102: <some text here>"
+        line_is_result = re.search('^\s*[0-9]*:', line_str)
+
+        if self.view.name() == 'Find Results' and line_is_result:
+            # Count backwards until we find a path or the beginning of the file.
+            prev = cur_line
+            while True:
+                prev = self.previous_line(prev)
+                if prev == None:
+                    break
+                line = self.view.substr(prev).strip()
+                if line.startswith('/') and line.endswith(':'):
+                    return self.open_file_from_line(line)
+
