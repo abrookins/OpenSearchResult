@@ -17,9 +17,10 @@ line number specified).
 
 You can change various things about the plugin by adding user settings:
 
-- 'highlight_file_paths': Set to false to disable highlighting openable paths (the open command will still work)
-- 'highlight_file_scope': The scope that will be used to color the outline for
-openable paths. See your theme file for examples.
-- 'highlight_file_icon': If you want an icon to show up in the gutter next to
-openable paths, include a valid icon name as a string (e.g., 'circle', 'dot')
-(see Sublime Text 2 API docs for View.add_regions() for valid icon names)
+- 'highlight_search_results': Set to false to disable highlighting openable
+paths (the open command will still work)
+- 'highlight_search_scope': The scope that will be used to color the outline for
+openable paths or the icon. See your theme file for examples of colors.
+- 'highlight_search_icon': If you want an icon to show up in the gutter next to
+openable paths, include a valid icon name as a string (e.g., 'circle', 'dot' or
+'bookmark')
