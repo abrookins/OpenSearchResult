@@ -68,7 +68,7 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
     cursor is on.
     """
 
-    def open_file_from_line(self, line):
+    def open_file_from_line(self, line, line_num):
         """
         Attempt to parse a file path from the string `line` and open it in a
         new buffer.
@@ -79,7 +79,8 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         file_path = line.split(':')[0]
 
         if os.path.exists(file_path):
-            self.view.window().open_file(file_path)
+            self.view.window().open_file(
+                "%s:%s" % (file_path, line_num), sublime.ENCODED_POSITION)
 
     def previous_line(self, region):
         """ `region` should be a Region covering the entire hard line """
@@ -98,13 +99,17 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         line_is_result = re.search('^\s*[0-9]*:', line_str)
 
         if self.view.name() == 'Find Results' and line_is_result:
+            # In a line of the format "<line_num>: <text>" this grabs line_num.
+            line_num = line_str.strip().split(':')[0]
+
             # Count backwards until we find a path or the beginning of the file.
             prev = cur_line
             while True:
                 prev = self.previous_line(prev)
                 if prev == None:
                     break
+
                 line = self.view.substr(prev).strip()
                 if line.startswith('/') and line.endswith(':'):
-                    return self.open_file_from_line(line)
+                    return self.open_file_from_line(line, line_num)
 
