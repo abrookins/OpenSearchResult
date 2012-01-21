@@ -3,6 +3,10 @@ import os
 import sublime, sublime_plugin
 
 
+# Matches lines of the format: "102: <some text here>"
+LINE_NUMBER_RE = '^\s*[0-9]:'
+
+
 class HighlightFilePaths(sublime_plugin.EventListener):
     HIGHLIGHT_REGION_NAME = 'HighlightFilePaths'
     SCOPE_SETTINGS_KEY = 'highlight_file_scope'
@@ -15,12 +19,17 @@ class HighlightFilePaths(sublime_plugin.EventListener):
         scope = view.settings().get(self.SCOPE_SETTINGS_KEY, self.DEFAULT_SCOPE)
         icon = view.settings().get(self.ICON_SETTINGS_KEY, self.DEFAULT_ICON)
 
+        if view.name() != 'Find Results':
+            return
+
         for s in view.sel():
             line = view.line(s)
             line_str = view.substr(view.line(s))
-            if not line_str.startswith('/') or not line_str.endswith(':'):
-                continue
-            valid_regions.append(line)
+            line_is_result = re.search(LINE_NUMBER_RE, line_str)
+
+            if line_str.startswith('/') or line_str.endswith(':') \
+                or line_is_result:
+                valid_regions.append(line)
 
         if valid_regions:
             view.add_regions(
@@ -45,27 +54,10 @@ class HighlightFilePaths(sublime_plugin.EventListener):
             self.show_highlight(view)
 
 
-class GotoFileAtPathCommand(sublime_plugin.TextCommand):
-    """ Open files listed in the Find in File results buffer. """
-
-    def run(self, edit):
-        """
-        If the user runs this command while on a line that starts with '/' and
-        ends with ':', open the file.
-        """
-        cursor = self.view.sel()[0]
-        line = self.view.substr(self.view.line(cursor))
-
-        if line.startswith('/') and line.endswith(':'):
-            file_path = line.split(':')[0]
-            if os.path.exists(file_path):
-                self.view.window().open_file(file_path)
-
-
 class OpenSearchResultCommand(sublime_plugin.TextCommand):
     """
     Open a file listed in the Find In File search results at the line the
-    cursor is on.
+    cursor is on, or just open the file if the cursor is on the file path.
     """
 
     def open_file_from_line(self, line, line_num):
@@ -90,26 +82,31 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
             return self.view.full_line(region.begin() - 1)
 
     def run(self, edit):
-        cursor = self.view.sel()[0]
-        cur_line = self.view.line(cursor)
-        line_str = self.view.substr(cur_line).strip()
+        for cursor in self.view.sel():
+            cur_line = self.view.line(cursor)
+            line_str = self.view.substr(cur_line).strip()
 
-        # Only a search result matching the find will include a colon.
-        # E.g., "102: <some text here>"
-        line_is_result = re.search('^\s*[0-9]*:', line_str)
+            if self.view.name() != 'Find Results':
+                return
 
-        if self.view.name() == 'Find Results' and line_is_result:
-            # In a line of the format "<line_num>: <text>" this grabs line_num.
-            line_num = line_str.strip().split(':')[0]
+            # Only a search result matching the find will include a colon.
+            line_is_search_result = re.search(LINE_NUMBER_RE, line_str)
 
-            # Count backwards until we find a path or the beginning of the file.
-            prev = cur_line
-            while True:
-                prev = self.previous_line(prev)
-                if prev == None:
-                    break
+            if line_str.startswith('/') and line_str.endswith(':'):
+                file_path = line_str.split(':')[0]
+                if os.path.exists(file_path):
+                    self.view.window().open_file(file_path)
+            elif line_is_search_result:
+                # In a line of the format "<line_num>: <text>" this grabs line_num.
+                line_num = line_str.strip().split(':')[0]
 
-                line = self.view.substr(prev).strip()
-                if line.startswith('/') and line.endswith(':'):
-                    return self.open_file_from_line(line, line_num)
+                # Count backwards until we find a path or the beginning of the file.
+                prev = cur_line
+                while True:
+                    prev = self.previous_line(prev)
+                    if prev == None:
+                        break
 
+                    line = self.view.substr(prev).strip()
+                    if line.startswith('/') and line.endswith(':'):
+                        return self.open_file_from_line(line, line_num)
