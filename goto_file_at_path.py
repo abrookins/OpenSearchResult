@@ -4,7 +4,7 @@ import sublime, sublime_plugin
 
 
 # Matches lines of the format: "102: <some text here>"
-LINE_NUMBER_RE = '^\s*[0-9]:'
+LINE_NUMBER_RE = '^\s*[0-9]*:'
 
 
 class HighlightFilePaths(sublime_plugin.EventListener):
