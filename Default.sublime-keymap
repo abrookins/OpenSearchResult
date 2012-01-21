@@ -1,11 +1,6 @@
 [
     {
         "keys": ["g", "o"],
-        "command": "goto_file_at_path",
-        "context": [{"key": "setting.command_mode"}]
-    },
-    {
-        "keys": ["g", "l"],
         "command": "open_search_result",
         "context": [{"key": "setting.command_mode"}]
     }

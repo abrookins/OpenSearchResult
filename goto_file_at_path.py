@@ -12,15 +12,25 @@ def parse_line_number(line_str):
     return line_num
 
 
+def is_file_path(line_str):
+    """
+    Test if `line_str` is a file path.
+    TODO: May not work on Windows.
+    """
+    return (line_str.startswith('/') and line_str.endswith(':'))
+
+
 class HighlightFilePaths(sublime_plugin.EventListener):
     HIGHLIGHT_REGION_NAME = 'HighlightFilePaths'
-    SCOPE_SETTINGS_KEY = 'highlight_file_scope'
-    ICON_SETTINGS_KEY = 'highlight_file_icon'
-    DEFAULT_SCOPE = 'highlight_file_path'
+    HIGHLIGHT_ENABLED_KEY = 'highlight_search_results'
+    SCOPE_SETTINGS_KEY = 'highlight_search_scope'
+    ICON_SETTINGS_KEY = 'highlight_search_icon'
+    DEFAULT_SCOPE = 'search_result_highlight'
     DEFAULT_ICON = ''
 
     def show_highlight(self, view):
         valid_regions = []
+        show_highlight = view.settings().get(self.HIGHLIGHT_ENABLED_KEY, False)
         scope = view.settings().get(self.SCOPE_SETTINGS_KEY, self.DEFAULT_SCOPE)
         icon = view.settings().get(self.ICON_SETTINGS_KEY, self.DEFAULT_ICON)
 
@@ -32,23 +42,30 @@ class HighlightFilePaths(sublime_plugin.EventListener):
             line_str = view.substr(view.line(s))
             line_num = parse_line_number(line_str)
 
-            if line_str.startswith('/') or line_str.endswith(':') \
-                or line_num:
+            if is_file_path(line_str) or line_num:
                 valid_regions.append(line)
 
         if valid_regions:
+            if show_highlight:
+                options = sublime.DRAW_EMPTY | sublime.DRAW_OUTLINED
+            else:
+                options = sublime.HIDDEN
+
             view.add_regions(
-                self.HIGHLIGHT_REGION_NAME, valid_regions, 
-                scope, icon, sublime.DRAW_EMPTY | sublime.DRAW_OUTLINED)
+                self.HIGHLIGHT_REGION_NAME, valid_regions, scope, icon, options)
         else:
             view.erase_regions(self.HIGHLIGHT_REGION_NAME)
 
     def on_selection_modified(self, view):
+        highlight_enabled = (view.settings().get(self.HIGHLIGHT_ENABLED_KEY)
+            or view.settings().get(self.ICON_SETTINGS_KEY))
+
         if view.settings().get('is_widget') \
-            or not view.settings().get('highlight_file_paths') \
-            or not view.settings().get('command_mode'):
+            or not view.settings().get('command_mode') \
+            or not highlight_enabled:
             view.erase_regions(self.HIGHLIGHT_REGION_NAME)
             return
+
         self.show_highlight(view)
 
     def on_deactivated(self, view):
@@ -94,13 +111,6 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         if os.path.exists(file_path):
             self.view.window().open_file(file_path)
 
-    def is_file_path(self, line_str):
-        """
-        Test if `line_str` is a file path.
-        TODO: May not work on Windows.
-        """
-        return (line_str.startswith('/') and line_str.endswith(':'))
-
     def open_file_at_line_num(self, cur_line, line_num):
         """
         Starting at the position `cur_line` (a `Region`), count backwards
@@ -114,7 +124,7 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
                 break
 
             line = self.view.substr(prev).strip()
-            if self.is_file_path(line):
+            if is_file_path(line):
                 return self.open_file_from_line(line, line_num)
 
     def run(self, edit):
@@ -126,7 +136,7 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
             if self.view.name() != 'Find Results':
                 return
 
-            if self.is_file_path(line_str):
+            if is_file_path(line_str):
                 self.open_file_path(line_str)
             elif line_num:
                 self.open_file_at_line_num(cur_line, line_num)
