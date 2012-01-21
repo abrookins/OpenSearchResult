@@ -3,21 +3,15 @@
 This plugin creates a command that allows you to open files listed in the search
 results of the 'Find in Files' command.
 
-- Run the `OpenSearchResultCommand` on a line number that matches
-your search to open the file it is in, at the correct line number.
+- When run on a line number that matches your search, it opens the file at the
+correct line number.
 
-- As you move your cursor through the search results, file paths that are
-openable will be highlighted in, by default, the "function" color of your color
-scheme. If you run the `GotoFileAtPathCommand` on a highlighted line, the file
-will open.
-
-The difference is that one command opens the file at the chosen line, while the
-other just opens the file.
+- When run on a file path in the search listing, it opens the file (without any
+line number specified)
 
 ## Key Binding
 
-- `OpenSearchResultCommand`: The default key binding is a Vintage command mode key: "g, l".
-- `GotoFileAtPathCommand`: The default key binding is a Vintage command mode key: "g, o".
+- The default key binding is a Vintage command mode key: "g, l".
 
 ## Customizing
 
