@@ -3,11 +3,11 @@
 This plugin creates a command that allows you to open files listed in the search
 results of the 'Find in Files' command.
 
-- When run on a line number that matches your search, it opens the file at the
-correct line number.
+- When run on a line in the search results that includes a line number, e.g., 
+"102:    print 'foo'" it opens the file at the correct line number.
 
-- When run on a file path in the search listing, it opens the file (without any
-line number specified).
+- When run on a line that contains a file path like '/path/to/somewhere:'
+in the search listing, it opens the file without a line number specified.
 
 ## Key Binding
 
