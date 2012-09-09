@@ -1,5 +1,6 @@
 import os
 import sublime, sublime_plugin
+import re
 
 
 def parse_line_number(line_str):
@@ -7,18 +8,16 @@ def parse_line_number(line_str):
     In a line of the format "<line_num>:    <text>"or "<line_num>    <text>"
     this grabs line_num.
     """
-    parts = line_str.split('     ')
+    parts = line_str.split()
     line_num = parts[0].strip().replace(':', '')
     return line_num
-
 
 def is_file_path(line_str):
     """
     Test if `line_str` is a file path.
     TODO: May not work on Windows.
     """
-    return (line_str.startswith('/') and line_str.endswith(':'))
-
+    return re.match("^(/|\w:).*:$", line_str) is not None
 
 class HighlightFilePaths(sublime_plugin.EventListener):
     HIGHLIGHT_REGION_NAME = 'HighlightFilePaths'
@@ -90,7 +89,7 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         if ':' not in line:
             return
 
-        file_path = line.split(':')[0]
+        file_path = line[0:-1]
 
         if os.path.exists(file_path):
             self.view.window().open_file(
@@ -107,7 +106,8 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         """
         Parse a file path from a string `line_str` of the format: "<path>:"
         """
-        file_path = line_str.split(':')[0]
+        file_path = line_str[0:-1]
+
         if os.path.exists(file_path):
             self.view.window().open_file(file_path)
 
