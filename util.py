@@ -29,6 +29,8 @@ def is_file_path(line_str):
     True
     >>> is_file_path('C:\Users\me\\test.txt:')
     True
+    >>> is_file_path('5: def parse_line_number(line_str):')
+    False
     """
-    return re.match("^(/|\w:).*:$", line_str) is not None
+    return re.match("^(/|\w:\\\).*:$", line_str) is not None
 
