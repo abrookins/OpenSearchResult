@@ -1,23 +1,6 @@
 import os
 import sublime, sublime_plugin
-
-
-def parse_line_number(line_str):
-    """
-    In a line of the format "<line_num>:    <text>"or "<line_num>    <text>"
-    this grabs line_num.
-    """
-    parts = line_str.split('     ')
-    line_num = parts[0].strip().replace(':', '')
-    return line_num
-
-
-def is_file_path(line_str):
-    """
-    Test if `line_str` is a file path.
-    TODO: May not work on Windows.
-    """
-    return (line_str.startswith('/') and line_str.endswith(':'))
+import util
 
 
 class HighlightFilePaths(sublime_plugin.EventListener):
@@ -40,9 +23,9 @@ class HighlightFilePaths(sublime_plugin.EventListener):
         for s in view.sel():
             line = view.line(s)
             line_str = view.substr(view.line(s))
-            line_num = parse_line_number(line_str)
+            line_num = util.parse_line_number(line_str)
 
-            if is_file_path(line_str) or line_num:
+            if util.is_file_path(line_str) or line_num:
                 valid_regions.append(line)
 
         if valid_regions:
@@ -120,23 +103,23 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         prev = cur_line
         while True:
             prev = self.previous_line(prev)
-            if prev == None:
+            if prev is None:
                 break
 
             line = self.view.substr(prev).strip()
-            if is_file_path(line):
+            if util.is_file_path(line):
                 return self.open_file_from_line(line, line_num)
 
     def run(self, edit):
         for cursor in self.view.sel():
             cur_line = self.view.line(cursor)
             line_str = self.view.substr(cur_line).strip()
-            line_num = parse_line_number(line_str)
+            line_num = util.parse_line_number(line_str)
 
             if self.view.name() != 'Find Results':
                 return
 
-            if is_file_path(line_str):
+            if util.is_file_path(line_str):
                 self.open_file_path(line_str)
             elif line_num:
                 self.open_file_at_line_num(cur_line, line_num)
