@@ -73,7 +73,7 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         if ':' not in line:
             return
 
-        file_path = line.split(':')[0]
+        file_path = line[0:-1]
 
         if os.path.exists(file_path):
             self.view.window().open_file(
@@ -90,7 +90,8 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         """
         Parse a file path from a string `line_str` of the format: "<path>:"
         """
-        file_path = line_str.split(':')[0]
+        file_path = line_str[0:-1]
+
         if os.path.exists(file_path):
             self.view.window().open_file(file_path)
 
