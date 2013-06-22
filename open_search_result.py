@@ -2,22 +2,26 @@ import os
 import sublime, sublime_plugin
 from .util import parse_line_number, is_file_path
 
+class OpenSearchResultKeys:
+    HIGHLIGHT_ENABLED = 'highlight_search_results'
+    SCOPE_SETTINGS = 'highlight_search_scope'
+    ICON_SETTINGS = 'highlight_search_icon'
+    OPEN_EVERYWHERE = 'open_search_result_everywhere'
+
 
 class HighlightFilePaths(sublime_plugin.EventListener):
     HIGHLIGHT_REGION_NAME = 'HighlightFilePaths'
-    HIGHLIGHT_ENABLED_KEY = 'highlight_search_results'
-    SCOPE_SETTINGS_KEY = 'highlight_search_scope'
-    ICON_SETTINGS_KEY = 'highlight_search_icon'
     DEFAULT_SCOPE = 'search_result_highlight'
     DEFAULT_ICON = ''
 
     def show_highlight(self, view):
         valid_regions = []
-        show_highlight = view.settings().get(self.HIGHLIGHT_ENABLED_KEY, False)
-        scope = view.settings().get(self.SCOPE_SETTINGS_KEY, self.DEFAULT_SCOPE)
-        icon = view.settings().get(self.ICON_SETTINGS_KEY, self.DEFAULT_ICON)
+        show_highlight = view.settings().get(OpenSearchResultKeys.HIGHLIGHT_ENABLED, False)
+        scope = view.settings().get(OpenSearchResultKeys.SCOPE_SETTINGS, self.DEFAULT_SCOPE)
+        icon = view.settings().get(OpenSearchResultKeys.ICON_SETTINGS, self.DEFAULT_ICON)
+        open_everywhere = view.settings().get(OpenSearchResultKeys.OPEN_EVERYWHERE, False)
 
-        if view.name() != 'Find Results':
+        if open_everywhere == False and view.name() != 'Find Results':
             return
 
         for s in view.sel():
@@ -40,8 +44,8 @@ class HighlightFilePaths(sublime_plugin.EventListener):
             view.erase_regions(self.HIGHLIGHT_REGION_NAME)
 
     def on_selection_modified(self, view):
-        highlight_enabled = (view.settings().get(self.HIGHLIGHT_ENABLED_KEY)
-            or view.settings().get(self.ICON_SETTINGS_KEY))
+        highlight_enabled = (view.settings().get(OpenSearchResultKeys.HIGHLIGHT_ENABLED)
+            or view.settings().get(OpenSearchResultKeys.ICON_SETTINGS))
 
         if view.settings().get('is_widget') \
             or not view.settings().get('command_mode') \
@@ -112,12 +116,13 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
                 return self.open_file_from_line(line, line_num)
 
     def run(self, edit):
+        open_everywhere = self.view.settings().get(OpenSearchResultKeys.OPEN_EVERYWHERE, False)
         for cursor in self.view.sel():
             cur_line = self.view.line(cursor)
             line_str = self.view.substr(cur_line).strip()
             line_num = parse_line_number(line_str)
 
-            if self.view.name() != 'Find Results':
+            if open_everywhere == False and self.view.name() != 'Find Results':
                 return
 
             if is_file_path(line_str):
