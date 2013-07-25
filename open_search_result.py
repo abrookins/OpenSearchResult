@@ -1,6 +1,11 @@
 import os
 import sublime, sublime_plugin
-from .util import parse_line_number, is_file_path
+# Load with Python3, fallback to load with Python2
+try:
+    from .util import parse_line_number, is_file_path
+except ValueError:
+    from util import parse_line_number, is_file_path
+
 
 class OpenSearchResultKeys:
     HIGHLIGHT_ENABLED = 'highlight_search_results'
