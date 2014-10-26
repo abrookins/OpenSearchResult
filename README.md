@@ -27,3 +27,19 @@ openable paths, include a valid icon name as a string (e.g., 'circle', 'dot' or
 - 'open_search_result_everywhere': Set to true to enable this plugin on all
 files not just Find Results panes. You can use this for saving and reopening
 your find results.
+
+## Installing
+
+### With Package Control
+
+The easiest way to install Open Search Result is via the [Package Control](http://wbond.net/sublime_packages/package_control) for Sublime Text.
+
+Once you install Package Control, restart Sublime Text and bring up the Command Palette with <kbd>Command</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> on OS X or <kbd>Control</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> on Linux/Windows.
+
+Select "Package Control: Install Package", wait while Package Control fetches the latest package list, then select "OpenSearchResult" when the list appears. The advantage of using this method is that Package Control will automatically keep the package up-to-date.
+
+### Without Package Control
+
+Download this package, unzip it and put it in your Sublime Text Packages directory, which can usually be found at ` ~/Library/Application Support/Sublime Text 2/Packages/`.
+
+Restart Sublime Text and you should be good to go.
