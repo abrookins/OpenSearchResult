@@ -7,6 +7,10 @@ except ValueError:
     from util import parse_line_number, is_file_path
 
 
+def is_filepath(s):
+    return is_file_path(os.path.expanduser(s))
+
+
 class OpenSearchResultKeys:
     HIGHLIGHT_ENABLED = 'highlight_search_results'
     SCOPE_SETTINGS = 'highlight_search_scope'
@@ -34,7 +38,7 @@ class HighlightFilePaths(sublime_plugin.EventListener):
             line_str = view.substr(view.line(s))
             line_num = parse_line_number(line_str)
 
-            if is_file_path(line_str) or line_num:
+            if is_filepath(line_str) or line_num:
                 valid_regions.append(line)
 
         if valid_regions:
@@ -82,7 +86,7 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         if ':' not in line:
             return
 
-        file_path = line[0:-1]
+        file_path = os.path.expanduser(line[0:-1])
 
         if os.path.exists(file_path):
             self.view.window().open_file(
@@ -99,7 +103,7 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
         """
         Parse a file path from a string `line_str` of the format: "<path>:"
         """
-        file_path = line_str[0:-1]
+        file_path = os.path.expanduser(line_str[0:-1])
 
         if os.path.exists(file_path):
             self.view.window().open_file(file_path)
@@ -117,7 +121,7 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
                 break
 
             line = self.view.substr(prev).strip()
-            if is_file_path(line):
+            if is_filepath(line):
                 return self.open_file_from_line(line, line_num)
 
     def run(self, edit):
@@ -130,7 +134,7 @@ class OpenSearchResultCommand(sublime_plugin.TextCommand):
             if open_everywhere == False and self.view.name() != 'Find Results':
                 return
 
-            if is_file_path(line_str):
+            if is_filepath(line_str):
                 self.open_file_path(line_str)
             elif line_num:
                 self.open_file_at_line_num(cur_line, line_num)
